@@ -2568,7 +2568,7 @@ elif page == "Market & Arbitrage":
                 "Current Market Value × "
                 "(1 − Spoilage Score / 100)\n\n"
                 "Alternative Net Value = "
-                "Alternative Market Value − "
+                "Alternative Market Value - "
                 "Alternative Logistics Cost\n\n"
                 "Arbitrage Benefit = "
                 "Alternative Net Value − "

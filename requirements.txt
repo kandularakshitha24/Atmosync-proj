@@ -3,3 +3,7 @@ numpy
 requests
 python-dotenv
 kafka-python
+scikit-learn
+joblib
+streamlit
+plotly
