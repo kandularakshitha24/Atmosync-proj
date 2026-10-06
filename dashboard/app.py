@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import os
+import joblib
 
 # ============================================================
 # PAGE CONFIG
@@ -174,6 +175,14 @@ TELEMETRY_FILE = (
     "data/processed/kafka_processed_telemetry.csv"
 )
 
+MODEL_FILE = (
+    "ml/models/spoilage_risk_model.pkl"
+)
+
+ENCODER_FILE = (
+    "ml/models/risk_label_encoder.pkl"
+)
+
 
 # ============================================================
 # LOAD DATA
@@ -247,6 +256,37 @@ telemetry["HUMIDITY"] = pd.to_numeric(
 telemetry["VIBRATION"] = pd.to_numeric(
     telemetry["vibration"],
     errors="coerce"
+)
+
+# ============================================================
+# MACHINE LEARNING RISK PREDICTION
+# ============================================================
+
+model = joblib.load(MODEL_FILE)
+label_encoder = joblib.load(ENCODER_FILE)
+
+ml_features = telemetry[
+    [
+        "TEMPERATURE",
+        "HUMIDITY",
+        "VIBRATION"
+    ]
+].copy()
+
+ml_features.columns = [
+    "temperature",
+    "humidity",
+    "vibration"
+]
+
+ml_predictions = model.predict(
+    ml_features
+)
+
+telemetry["ML_RISK_PREDICTION"] = (
+    label_encoder.inverse_transform(
+        ml_predictions
+    )
 )
 
 
@@ -707,6 +747,78 @@ if page == "Executive Overview":
             "Containers Monitored",
             containers_monitored
         )
+
+            # --------------------------------------------------------
+    # AI RISK PREDICTION
+    # --------------------------------------------------------
+
+    st.markdown(
+        '<div class="section-title">'
+        'AI Risk Prediction'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="section-subtitle">'
+        'Random Forest predictions based on temperature, humidity and vibration'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    ml_counts = (
+        telemetry["ML_RISK_PREDICTION"]
+        .value_counts()
+        .reindex(
+            ["HIGH", "MEDIUM", "LOW"],
+            fill_value=0
+        )
+    )
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+
+        st.metric(
+            "AI HIGH RISK",
+            int(ml_counts["HIGH"])
+        )
+
+    with col2:
+
+        st.metric(
+            "AI MEDIUM RISK",
+            int(ml_counts["MEDIUM"])
+        )
+
+    with col3:
+
+        st.metric(
+            "AI LOW RISK",
+            int(ml_counts["LOW"])
+        )
+
+    ml_chart = px.bar(
+        x=ml_counts.index,
+        y=ml_counts.values,
+        labels={
+            "x": "Predicted Risk",
+            "y": "Telemetry Readings"
+        },
+        title="ML Risk Prediction Distribution"
+    )
+
+    ml_chart.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#dbe2e8")
+    )
+
+    st.plotly_chart(
+        ml_chart,
+        use_container_width=True
+    )
 
 
     # --------------------------------------------------------
