@@ -190,18 +190,6 @@ ENCODER_FILE = (
 
 try:
 
-    data = pd.read_csv(SUMMARY_FILE)
-
-except FileNotFoundError:
-
-    st.error(
-        "Dashboard summary file was not found."
-    )
-
-    st.stop()
-
-try:
-
     telemetry = pd.read_csv(TELEMETRY_FILE)
 
 except FileNotFoundError:
@@ -211,6 +199,108 @@ except FileNotFoundError:
     )
 
     st.stop()
+
+
+# ============================================================
+# BUILD CONTAINER SUMMARY FROM KAFKA TELEMETRY
+# ============================================================
+
+telemetry["temperature"] = pd.to_numeric(
+    telemetry["temperature"],
+    errors="coerce"
+)
+
+telemetry["humidity"] = pd.to_numeric(
+    telemetry["humidity"],
+    errors="coerce"
+)
+
+telemetry["vibration"] = pd.to_numeric(
+    telemetry["vibration"],
+    errors="coerce"
+)
+
+telemetry["SPOILAGE_SCORE"] = 0
+
+telemetry.loc[
+    (telemetry["temperature"] > 30) &
+    (telemetry["humidity"] > 75),
+    "SPOILAGE_SCORE"
+] = 80
+
+telemetry.loc[
+    (
+        (telemetry["temperature"] > 30) &
+        (telemetry["humidity"] <= 75)
+    ) |
+    (
+        (telemetry["temperature"] <= 30) &
+        (telemetry["humidity"] > 75)
+    ),
+    "SPOILAGE_SCORE"
+] = 40
+
+data = (
+    telemetry
+    .groupby(
+        [
+            "container_id",
+            "commodity",
+            "origin",
+            "destination"
+        ],
+        as_index=False
+    )
+    .agg(
+        TOTAL_READINGS=("container_id", "count"),
+        RISK_EVENTS=("risk_status", lambda x: (x == "RISK").sum()),
+        AVG_TEMPERATURE=("temperature", "mean"),
+        AVG_HUMIDITY=("humidity", "mean"),
+        MAX_SPOILAGE_SCORE=("SPOILAGE_SCORE", "max"),
+        AVG_SPOILAGE_SCORE=("SPOILAGE_SCORE", "mean")
+    )
+)
+
+data["AVG_TEMPERATURE"] = (
+    data["AVG_TEMPERATURE"].round(2)
+)
+
+data["AVG_HUMIDITY"] = (
+    data["AVG_HUMIDITY"].round(2)
+)
+
+data["AVG_SPOILAGE_SCORE"] = (
+    data["AVG_SPOILAGE_SCORE"].round(2)
+)
+
+data["OVERALL_RISK"] = data["MAX_SPOILAGE_SCORE"].apply(
+    lambda score:
+        "HIGH" if score >= 80
+        else "MEDIUM" if score >= 40
+        else "LOW"
+)
+
+data = data.sort_values(
+    "MAX_SPOILAGE_SCORE",
+    ascending=False
+).reset_index(drop=True)
+
+
+# Match the column names expected by the dashboard
+
+data.columns = [
+    "CONTAINER_ID",
+    "COMMODITY",
+    "ORIGIN",
+    "DESTINATION",
+    "TOTAL_READINGS",
+    "RISK_EVENTS",
+    "AVG_TEMPERATURE",
+    "AVG_HUMIDITY",
+    "MAX_SPOILAGE_SCORE",
+    "AVG_SPOILAGE_SCORE",
+    "OVERALL_RISK"
+]
 
 # ============================================================
 # MARKET DATA
