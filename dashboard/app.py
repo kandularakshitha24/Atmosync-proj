@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-
+import os
 
 # ============================================================
-# PAGE CONFIGURATION
+# PAGE CONFIG
 # ============================================================
 
 st.set_page_config(
@@ -20,11 +20,12 @@ st.set_page_config(
 # PREMIUM DARK THEME
 # ============================================================
 
-st.markdown("""
-<style>
+st.markdown(
+    """
+    <style>
 
     .stApp {
-        background: #0b0f14;
+        background-color: #0b0f14;
         color: #f4f7fa;
     }
 
@@ -44,32 +45,89 @@ st.markdown("""
     }
 
     section[data-testid="stSidebar"] {
-    background-color: #111820 !important;
-    border-right: 2px solid #34404d !important;
-    min-width: 280px !important;
-    width: 280px !important;
-}
+        background-color: #111820 !important;
+        border-right: 1px solid #293440 !important;
+        min-width: 280px !important;
+        width: 280px !important;
+    }
 
-section[data-testid="stSidebar"] > div {
-    padding-top: 2rem !important;
-}
+    section[data-testid="stSidebar"] > div {
+        padding-top: 2rem !important;
+    }
 
-section[data-testid="stSidebar"] * {
-    color: #f5f7fa !important;
-}
+    section[data-testid="stSidebar"] * {
+        color: #f5f7fa !important;
+    }
 
     .brand {
         font-size: 28px;
         font-weight: 700;
         letter-spacing: 2px;
-        color: #f4f7fa;
     }
 
     .brand-subtitle {
-        font-size: 12px;
-        color: #7f8b99;
+        font-size: 10px;
+        color: #7f8b99 !important;
         letter-spacing: 1.5px;
-        margin-top: -5px;
+        margin-top: -4px;
+    }
+
+    .nav-heading {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.8px;
+        color: #7f8b99 !important;
+        margin: 8px 0 12px 4px;
+    }
+
+    .nav-divider {
+        height: 1px;
+        background-color: #202832;
+        margin: 18px 0;
+    }
+
+    section[data-testid="stSidebar"]
+    div[role="radiogroup"] {
+        gap: 5px;
+    }
+
+    section[data-testid="stSidebar"]
+    div[role="radiogroup"] label {
+        background-color: transparent !important;
+        border: 1px solid transparent !important;
+        border-radius: 8px !important;
+        padding: 10px 12px !important;
+        margin-bottom: 4px !important;
+    }
+
+    section[data-testid="stSidebar"]
+    div[role="radiogroup"] label:hover {
+        background-color: #18212b !important;
+        border-color: #293542 !important;
+    }
+
+    section[data-testid="stSidebar"]
+    div[role="radiogroup"]
+    label:has(input:checked) {
+        background-color: #1b2632 !important;
+        border-color: #344353 !important;
+    }
+
+    section[data-testid="stSidebar"]
+    div[role="radiogroup"]
+    label:has(input:checked) p {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    section[data-testid="stSidebar"]
+    div[role="radiogroup"] label p {
+        color: #aeb8c4 !important;
+        font-size: 13px !important;
+    }
+
+    .sidebar-spacer {
+        height: 30px;
     }
 
     .page-title {
@@ -82,62 +140,13 @@ section[data-testid="stSidebar"] * {
     .page-subtitle {
         color: #8995a3;
         font-size: 14px;
-        margin-bottom: 28px;
-    }
-
-    .status {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: #111a17;
-        border: 1px solid #24372f;
-        padding: 7px 12px;
-        border-radius: 20px;
-        color: #9ed7b8;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .status-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #56c596;
-        display: inline-block;
-    }
-
-    .metric-card {
-        background: #11161d;
-        border: 1px solid #202832;
-        border-radius: 14px;
-        padding: 20px 22px;
-        min-height: 120px;
-    }
-
-    .metric-label {
-        color: #7f8b99;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 1.2px;
-    }
-
-    .metric-value {
-        color: #f4f7fa;
-        font-size: 32px;
-        font-weight: 700;
-        margin-top: 8px;
-    }
-
-    .metric-caption {
-        color: #687583;
-        font-size: 12px;
-        margin-top: 5px;
+        margin-bottom: 18px;
     }
 
     .section-title {
-        font-size: 18px;
+        font-size: 19px;
         font-weight: 650;
-        margin-top: 30px;
+        margin-top: 28px;
         margin-bottom: 5px;
     }
 
@@ -147,145 +156,77 @@ section[data-testid="stSidebar"] * {
         margin-bottom: 15px;
     }
 
-    .alert-card {
-        background: #151318;
-        border: 1px solid #392c32;
-        border-left: 3px solid #d96c73;
-        border-radius: 10px;
-        padding: 15px 18px;
-        margin-bottom: 10px;
-    }
-
-    .alert-title {
-        color: #f1d7da;
-        font-size: 13px;
-        font-weight: 650;
-    }
-
-    .alert-detail {
-        color: #7f8995;
-        font-size: 12px;
-        margin-top: 4px;
-    }
-
-    .telemetry-card {
-        background: #11161d;
-        border: 1px solid #202832;
-        border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 10px;
-    }
-
-    div[data-testid="stDataFrame"] {
-        border: 1px solid #202832;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .stButton > button {
-        border-radius: 8px;
-        border: 1px solid #29333e;
-        background: #151b23;
-        color: #dbe2e8;
-    }
-
-    .stButton > button:hover {
-        border-color: #566474;
-        color: #ffffff;
-    }
-
-/* ============================================================
-   PREMIUM SIDEBAR NAVIGATION
-   ============================================================ */
-
-.nav-heading {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.8px;
-    color: #7f8b99;
-    margin: 8px 0 12px 4px;
-}
-
-.nav-divider {
-    height: 1px;
-    background: #202832;
-    margin: 18px 0;
-}
-
-section[data-testid="stSidebar"] div[role="radiogroup"] {
-    gap: 6px;
-}
-
-section[data-testid="stSidebar"] div[role="radiogroup"] label {
-    background: transparent !important;
-    border: 1px solid transparent !important;
-    border-radius: 8px !important;
-    padding: 11px 12px !important;
-    margin: 0 0 5px 0 !important;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-    background: #18212b !important;
-    border-color: #273341 !important;
-}
-
-section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
-    background: #1b2632 !important;
-    border-color: #344353 !important;
-}
-
-section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) p {
-    color: #ffffff !important;
-    font-weight: 700 !important;
-}
-
-section[data-testid="stSidebar"] div[role="radiogroup"] label p {
-    color: #aeb8c4 !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-}
-
-.sidebar-spacer {
-    height: 30px;
-}
-</style>
-""", unsafe_allow_html=True)
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # ============================================================
-# DATA
+# DATA FILES
 # ============================================================
 
-SUMMARY_PATH = "data/processed/dashboard_container_summary.csv"
-TELEMETRY_PATH = "data/processed/kafka_processed_telemetry.csv"
+SUMMARY_FILE = (
+    "data/processed/dashboard_container_summary.csv"
+)
+
+TELEMETRY_FILE = (
+    "data/processed/kafka_processed_telemetry.csv"
+)
 
 
-# Load container summary
+# ============================================================
+# LOAD DATA
+# ============================================================
+
 try:
-    data = pd.read_csv(SUMMARY_PATH)
+
+    data = pd.read_csv(SUMMARY_FILE)
 
 except FileNotFoundError:
+
     st.error(
-        f"Dashboard summary file not found: {SUMMARY_PATH}"
+        "Dashboard summary file was not found."
     )
+
     st.stop()
 
-
-# Load telemetry data
 try:
-    telemetry = pd.read_csv(TELEMETRY_PATH)
+
+    telemetry = pd.read_csv(TELEMETRY_FILE)
 
 except FileNotFoundError:
+
     st.error(
-        f"Telemetry file not found: {TELEMETRY_PATH}"
+        "Kafka telemetry file was not found."
     )
+
     st.stop()
 
+# ============================================================
+# MARKET DATA
+# ============================================================
+
+MARKET_FILE = (
+    "data/processed/market_opportunities.csv"
+)
+
+try:
+
+    market_data = pd.read_csv(
+        MARKET_FILE
+    )
+
+except FileNotFoundError:
+
+    st.error(
+        "Market opportunities file was not found."
+    )
+
+    st.stop()
 
 # ============================================================
-# DATA CLEANING
+# PREPARE TELEMETRY
 # ============================================================
 
 telemetry["TIMESTAMP"] = pd.to_datetime(
@@ -310,36 +251,68 @@ telemetry["VIBRATION"] = pd.to_numeric(
 
 
 # ============================================================
-# SPOILAGE SCORE CALCULATION
+# SPOILAGE SCORE
 # ============================================================
 
-def calculate_spoilage_score(row):
+def get_spoilage_score(row):
 
     temperature = row["TEMPERATURE"]
     humidity = row["HUMIDITY"]
 
+    if pd.isna(temperature) or pd.isna(humidity):
+        return 0
+
     if temperature > 30 and humidity > 75:
         return 80
 
-    elif temperature > 30 or humidity > 75:
+    if temperature > 30 or humidity > 75:
         return 40
 
     return 0
 
 
 telemetry["SPOILAGE_SCORE"] = telemetry.apply(
-    calculate_spoilage_score,
+    get_spoilage_score,
     axis=1
 )
 
 
 telemetry["SPOILAGE_LEVEL"] = telemetry[
     "SPOILAGE_SCORE"
-].map({
-    0: "LOW",
-    40: "MEDIUM",
-    80: "HIGH"
-})
+].map(
+    {
+        0: "LOW",
+        40: "MEDIUM",
+        80: "HIGH"
+    }
+)
+
+
+# ============================================================
+# TELEMETRY STATUS
+# ============================================================
+
+telemetry_readings = len(telemetry)
+
+containers_monitored = telemetry[
+    "container_id"
+].nunique()
+
+latest_timestamp = telemetry[
+    "TIMESTAMP"
+].max()
+
+if pd.notna(latest_timestamp):
+
+    latest_telemetry_text = (
+        latest_timestamp.strftime(
+            "%d %b %Y · %H:%M:%S"
+        )
+    )
+
+else:
+
+    latest_telemetry_text = "Unavailable"
 
 
 # ============================================================
@@ -347,10 +320,6 @@ telemetry["SPOILAGE_LEVEL"] = telemetry[
 # ============================================================
 
 with st.sidebar:
-
-    # ============================================================
-    # ATMOSYNC BRAND
-    # ============================================================
 
     st.markdown(
         '<div class="brand">ATMOSYNC</div>',
@@ -364,11 +333,10 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    st.markdown("<div class='nav-divider'></div>", unsafe_allow_html=True)
-
-    # ============================================================
-    # NAVIGATION
-    # ============================================================
+    st.markdown(
+        "<div class='nav-divider'></div>",
+        unsafe_allow_html=True
+    )
 
     st.markdown(
         '<div class="nav-heading">CONTROL TOWER</div>',
@@ -376,36 +344,46 @@ with st.sidebar:
     )
 
     page = st.radio(
-        "NAVIGATION",
-        [
-            "Executive Overview",
-            "Container Intelligence",
-            "Analytics"
-        ],
-        key="dashboard_page",
-        label_visibility="collapsed"
+    "NAVIGATION",
+    [
+        "Executive Overview",
+        "Container Intelligence",
+        "Analytics",
+        "Market & Arbitrage"
+    ],
+    label_visibility="collapsed"
+)
+
+    st.markdown(
+        "<div class='nav-divider'></div>",
+        unsafe_allow_html=True
     )
-
-    st.markdown("<div class='nav-divider'></div>", unsafe_allow_html=True)
-
-    # ============================================================
-    # SYSTEM STATUS
-    # ============================================================
 
     st.markdown(
         '<div class="nav-heading">SYSTEM</div>',
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="status">'
-        '<span class="status-dot"></span>'
-        '<span>SYSTEM OPERATIONAL</span>'
-        '</div>',
-        unsafe_allow_html=True
+    st.success(
+        "SYSTEM OPERATIONAL"
     )
 
-    st.markdown("<div class='sidebar-spacer'></div>", unsafe_allow_html=True)
+    st.caption(
+        f"Telemetry: {telemetry_readings} readings"
+    )
+
+    st.caption(
+        f"Containers: {containers_monitored}"
+    )
+
+    st.caption(
+        f"Last update: {latest_telemetry_text}"
+    )
+
+    st.markdown(
+        "<div class='sidebar-spacer'></div>",
+        unsafe_allow_html=True
+    )
 
     st.caption("AtmoSync v1.0")
     st.caption("Supply Chain Risk Intelligence")
@@ -429,118 +407,107 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown(
-    '<div class="status">'
-    '<span class="status-dot"></span>'
-    'LIVE TELEMETRY MONITORING'
-    '</div>',
-    unsafe_allow_html=True
+
+# ============================================================
+# TELEMETRY STATUS BAR
+# ============================================================
+
+status_col1, status_col2, status_col3 = st.columns(
+    [1.2, 1, 1.4]
 )
 
-st.write("")
+with status_col1:
+
+    st.success(
+        "●  TELEMETRY STREAM OPERATIONAL"
+    )
+
+with status_col2:
+
+    st.caption(
+        f"{telemetry_readings} readings · "
+        f"{containers_monitored} containers"
+    )
+
+with status_col3:
+
+    st.caption(
+        f"Last telemetry: {latest_telemetry_text}"
+    )
 
 
 # ============================================================
-# KPI CALCULATIONS
+# GLOBAL KPIs
 # ============================================================
 
 total_containers = len(data)
 
-high_risk = len(
-    data[data["OVERALL_RISK"] == "HIGH"]
-)
-
-medium_risk = len(
-    data[data["OVERALL_RISK"] == "MEDIUM"]
-)
-
-avg_score = data["AVG_SPOILAGE_SCORE"].mean()
-
-total_risk_events = data["RISK_EVENTS"].sum()
-
-total_telemetry = len(telemetry)
-
-high_risk_readings = len(
-    telemetry[
-        telemetry["SPOILAGE_LEVEL"] == "HIGH"
+high_risk_containers = len(
+    data[
+        data["OVERALL_RISK"] == "HIGH"
     ]
 )
 
+medium_risk_containers = len(
+    data[
+        data["OVERALL_RISK"] == "MEDIUM"
+    ]
+)
 
-# ============================================================
-# KPI ROW
-# ============================================================
+average_spoilage_score = (
+    data["AVG_SPOILAGE_SCORE"].mean()
+)
 
-col1, col2, col3, col4, col5 = st.columns(5)
+total_risk_events = int(
+    data["RISK_EVENTS"].sum()
+)
 
 
-with col1:
+k1, k2, k3, k4, k5 = st.columns(5)
 
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">Active Containers</div>
-            <div class="metric-value">{total_containers:02d}</div>
-            <div class="metric-caption">Tracked shipments</div>
-        </div>
-        """,
-        unsafe_allow_html=True
+
+with k1:
+
+    st.metric(
+        "Active Containers",
+        f"{total_containers:02d}",
+        "Tracked shipments"
     )
 
 
-with col2:
+with k2:
 
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">High Risk</div>
-            <div class="metric-value">{high_risk:02d}</div>
-            <div class="metric-caption">Immediate attention</div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    st.metric(
+        "High Risk",
+        f"{high_risk_containers:02d}",
+        "Immediate attention"
     )
 
 
-with col3:
+with k3:
 
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">Medium Risk</div>
-            <div class="metric-value">{medium_risk:02d}</div>
-            <div class="metric-caption">Monitor closely</div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    st.metric(
+        "Medium Risk",
+        f"{medium_risk_containers:02d}",
+        "Monitor closely"
     )
 
 
-with col4:
+with k4:
 
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">Avg Spoilage Score</div>
-            <div class="metric-value">{avg_score:.1f}</div>
-            <div class="metric-caption">Risk indicator</div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    st.metric(
+        "Avg Spoilage Score",
+        f"{average_spoilage_score:.1f}",
+        "Risk indicator"
     )
 
 
-with col5:
+with k5:
 
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">Risk Events</div>
-            <div class="metric-value">{total_risk_events:02d}</div>
-            <div class="metric-caption">Environmental alerts</div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    st.metric(
+        "Risk Events",
+        f"{total_risk_events:02d}",
+        "Environmental alerts"
     )
 
 
@@ -550,27 +517,26 @@ with col5:
 
 if page == "Executive Overview":
 
-    # ============================================================
-    # EXECUTIVE OVERVIEW
-    # ============================================================
-
     st.markdown(
-        '<div class="section-title">Container Risk Monitor</div>',
+        '<div class="section-title">'
+        'Container Risk Monitor'
+        '</div>',
         unsafe_allow_html=True
     )
 
     st.markdown(
         '<div class="section-subtitle">'
-        'Real-time shipment health across the monitored agricultural fleet'
+        'Current shipment health across the monitored fleet'
         '</div>',
         unsafe_allow_html=True
     )
 
-    # ============================================================
-    # FLEET RISK TABLE
-    # ============================================================
 
-    display_data = data[
+    # --------------------------------------------------------
+    # RISK TABLE
+    # --------------------------------------------------------
+
+    risk_table = data[
         [
             "CONTAINER_ID",
             "COMMODITY",
@@ -584,90 +550,70 @@ if page == "Executive Overview":
         ]
     ].copy()
 
-    display_data.columns = [
+
+    risk_table.columns = [
         "Container",
         "Commodity",
         "Origin",
         "Destination",
         "Risk Events",
-        "Avg Temp °C",
+        "Avg Temperature °C",
         "Avg Humidity %",
-        "Max Score",
-        "Risk"
+        "Max Spoilage Score",
+        "Risk Level"
     ]
 
+
     st.dataframe(
-        display_data,
-        width="stretch",
-        hide_index=True,
-        height=310
+        risk_table,
+        use_container_width=True,
+        hide_index=True
     )
 
-    # ============================================================
-    # FLEET ANALYTICS
-    # ============================================================
 
-    st.markdown(
-        '<div class="section-title">Fleet Analytics</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Environmental exposure and risk distribution across active shipments'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    chart1, chart2 = st.columns(2)
-
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
     # RISK DISTRIBUTION
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
 
-    with chart1:
+    chart_col1, chart_col2 = st.columns(2)
+
+
+    with chart_col1:
 
         risk_counts = (
             data["OVERALL_RISK"]
             .value_counts()
-            .reindex(["HIGH", "MEDIUM", "LOW"], fill_value=0)
+            .reindex(
+                ["HIGH", "MEDIUM", "LOW"],
+                fill_value=0
+            )
         )
+
 
         fig = px.bar(
             x=risk_counts.index,
             y=risk_counts.values,
-            labels={
-                "x": "Risk Level",
-                "y": "Containers"
-            }
+            title="Fleet Risk Distribution"
         )
 
-        fig.update_traces(
-            marker_line_width=0,
-            hovertemplate="<b>%{x}</b><br>Containers: %{y}<extra></extra>"
-        )
 
         fig.update_layout(
-            title="Fleet Risk Distribution",
             template="plotly_dark",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             font=dict(color="#dbe2e8"),
-            height=350,
-            margin=dict(l=20, r=20, t=60, b=30),
-            showlegend=False
+            xaxis_title="Risk Level",
+            yaxis_title="Containers"
         )
+
 
         st.plotly_chart(
             fig,
-            width="stretch"
+            use_container_width=True
         )
 
-    # ------------------------------------------------------------
-    # ENVIRONMENTAL EXPOSURE
-    # ------------------------------------------------------------
 
-    with chart2:
+    with chart_col2:
 
         fig = px.scatter(
             data,
@@ -675,43 +621,51 @@ if page == "Executive Overview":
             y="AVG_HUMIDITY",
             size="MAX_SPOILAGE_SCORE",
             hover_name="CONTAINER_ID",
-            text="COMMODITY",
-            labels={
-                "AVG_TEMPERATURE": "Average Temperature °C",
-                "AVG_HUMIDITY": "Average Humidity %"
-            }
+            hover_data=[
+                "COMMODITY",
+                "ORIGIN",
+                "DESTINATION"
+            ],
+            title="Environmental Exposure"
         )
 
-        fig.update_traces(
-            textposition="top center",
-            marker=dict(
-                opacity=0.85,
-                line=dict(width=1)
-            )
+
+        fig.add_vline(
+            x=30,
+            line_dash="dash"
         )
+
+
+        fig.add_hline(
+            y=75,
+            line_dash="dash"
+        )
+
 
         fig.update_layout(
-            title="Environmental Exposure Map",
             template="plotly_dark",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             font=dict(color="#dbe2e8"),
-            height=350,
-            margin=dict(l=20, r=20, t=60, b=30),
-            showlegend=False
+            xaxis_title="Average Temperature °C",
+            yaxis_title="Average Humidity %"
         )
+
 
         st.plotly_chart(
             fig,
-            width="stretch"
+            use_container_width=True
         )
 
-    # ============================================================
+
+    # --------------------------------------------------------
     # TELEMETRY INTELLIGENCE
-    # ============================================================
+    # --------------------------------------------------------
 
     st.markdown(
-        '<div class="section-title">Telemetry Intelligence</div>',
+        '<div class="section-title">'
+        'Telemetry Intelligence'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -722,120 +676,120 @@ if page == "Executive Overview":
         unsafe_allow_html=True
     )
 
+
     t1, t2, t3 = st.columns(3)
 
+
     with t1:
+
         st.metric(
             "Telemetry Readings",
-            total_telemetry
+            telemetry_readings
         )
+
 
     with t2:
+
         st.metric(
             "High-Risk Readings",
-            high_risk_readings
+            int(
+                (
+                    telemetry["SPOILAGE_LEVEL"]
+                    == "HIGH"
+                ).sum()
+            )
         )
+
 
     with t3:
+
         st.metric(
             "Containers Monitored",
-            telemetry["container_id"].nunique()
+            containers_monitored
         )
 
-    # ============================================================
-    # LATEST TELEMETRY
-    # ============================================================
 
-    latest = (
-        telemetry
-        .sort_values("TIMESTAMP", ascending=False)
-        .head(10)
+    # --------------------------------------------------------
+    # TELEMETRY CHART
+    # --------------------------------------------------------
+
+    telemetry_chart = go.Figure()
+
+
+    telemetry_chart.add_trace(
+        go.Scatter(
+            x=telemetry["TIMESTAMP"],
+            y=telemetry["TEMPERATURE"],
+            mode="lines+markers",
+            name="Temperature"
+        )
     )
 
-    latest_display = latest[
-        [
-            "TIMESTAMP",
-            "container_id",
-            "commodity",
-            "temperature",
-            "humidity",
-            "vibration",
-            "SPOILAGE_SCORE",
-            "SPOILAGE_LEVEL"
-        ]
-    ].copy()
 
-    latest_display.columns = [
-        "Timestamp",
-        "Container",
-        "Commodity",
-        "Temperature °C",
-        "Humidity %",
-        "Vibration",
-        "Spoilage Score",
-        "Level"
-    ]
-
-    st.dataframe(
-        latest_display,
-        width="stretch",
-        hide_index=True,
-        height=360
+    telemetry_chart.add_trace(
+        go.Scatter(
+            x=telemetry["TIMESTAMP"],
+            y=telemetry["HUMIDITY"],
+            mode="lines+markers",
+            name="Humidity"
+        )
     )
 
-    # ============================================================
+
+    telemetry_chart.update_layout(
+        title="Fleet Environmental Telemetry",
+        template="plotly_dark",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#dbe2e8"),
+        hovermode="x unified"
+    )
+
+
+    st.plotly_chart(
+        telemetry_chart,
+        use_container_width=True
+    )
+
+
+    # --------------------------------------------------------
     # ACTIVE ALERTS
-    # ============================================================
+    # --------------------------------------------------------
 
     st.markdown(
-        '<div class="section-title">Active Alerts</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Containers requiring operational attention'
+        '<div class="section-title">'
+        'Active Alerts'
         '</div>',
         unsafe_allow_html=True
     )
 
-    high_risk_data = data[
+
+    active_alerts = data[
         data["OVERALL_RISK"] == "HIGH"
     ]
 
-    if high_risk_data.empty:
 
-        st.success("No high-risk containers detected.")
+    if active_alerts.empty:
+
+        st.success(
+            "No high-risk shipments are currently detected."
+        )
 
     else:
 
-        for _, row in high_risk_data.iterrows():
+        for _, row in active_alerts.iterrows():
 
-            st.html(f"""
-            <div class="alert-card">
+            st.error(
+                f'{row["CONTAINER_ID"]} · '
+                f'{row["COMMODITY"]} · '
+                f'{row["ORIGIN"]} → '
+                f'{row["DESTINATION"]}\n\n'
+                f'Maximum spoilage score: '
+                f'{int(row["MAX_SPOILAGE_SCORE"])} · '
+                f'Risk events: '
+                f'{int(row["RISK_EVENTS"])}'
+            )
 
-                <div class="alert-title">
-                    {row["CONTAINER_ID"]} · {row["COMMODITY"]}
-                </div>
-
-                <div class="alert-detail">
-                    Route: {row["ORIGIN"]} → {row["DESTINATION"]}
-                    &nbsp; • &nbsp;
-                    Maximum spoilage score:
-                    {row["MAX_SPOILAGE_SCORE"]}
-                    &nbsp; • &nbsp;
-                    Risk events:
-                    {row["RISK_EVENTS"]}
-                </div>
-
-            </div>
-            """)
-
-
-
-# ============================================================
-# CONTAINER INTELLIGENCE
-# ============================================================
 
 # ============================================================
 # CONTAINER INTELLIGENCE
@@ -857,261 +811,166 @@ elif page == "Container Intelligence":
         unsafe_allow_html=True
     )
 
+
     # --------------------------------------------------------
-    # CONTAINER SELECTOR
+    # SELECT CONTAINER
     # --------------------------------------------------------
 
     selected_container = st.selectbox(
         "Select container",
-        data["CONTAINER_ID"].tolist(),
-        key="container_selector"
+        data["CONTAINER_ID"].tolist()
     )
 
+
     container = data[
-        data["CONTAINER_ID"] == selected_container
+        data["CONTAINER_ID"]
+        == selected_container
     ].iloc[0]
 
-    container_telemetry = telemetry[
-        telemetry["container_id"] == selected_container
-    ].sort_values("TIMESTAMP").copy()
 
-    st.write("")
+    container_telemetry = telemetry[
+        telemetry["container_id"]
+        == selected_container
+    ].sort_values(
+        "TIMESTAMP"
+    ).copy()
+
 
     # --------------------------------------------------------
-    # CONTAINER HEADER
+    # ACTIVE SHIPMENT
     # --------------------------------------------------------
 
     st.markdown(
-        f"""
-        <div class="telemetry-card">
-            <div style="
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-                gap:20px;
-                flex-wrap:wrap;
-            ">
-
-                <div>
-                    <div style="
-                        color:#7f8b99;
-                        font-size:11px;
-                        letter-spacing:1.5px;
-                        text-transform:uppercase;
-                    ">
-                        Active Shipment
-                    </div>
-
-                    <div style="
-                        color:#f4f7fa;
-                        font-size:25px;
-                        font-weight:700;
-                        margin-top:5px;
-                    ">
-                        {container["CONTAINER_ID"]}
-                    </div>
-
-                    <div style="
-                        color:#8995a3;
-                        font-size:13px;
-                        margin-top:4px;
-                    ">
-                        {container["COMMODITY"]} ·
-                        {container["ORIGIN"]} →
-                        {container["DESTINATION"]}
-                    </div>
-                </div>
-
-                <div style="
-                    background:#1b2632;
-                    border:1px solid #344353;
-                    border-radius:20px;
-                    padding:8px 15px;
-                    color:#f1d7da;
-                    font-size:12px;
-                    font-weight:700;
-                    letter-spacing:.7px;
-                ">
-                    {container["OVERALL_RISK"]} RISK
-                </div>
-
-            </div>
-        </div>
-        """,
+        '<div class="section-title">'
+        'Active Shipment'
+        '</div>',
         unsafe_allow_html=True
     )
 
-    st.write("")
 
-    # --------------------------------------------------------
-    # CONTAINER KPIs
-    # --------------------------------------------------------
+    h1, h2 = st.columns([4, 1])
 
-    c1, c2, c3, c4 = st.columns(4)
 
-    with c1:
+    with h1:
 
-        st.metric(
-            "Commodity",
-            container["COMMODITY"]
+        st.subheader(
+            container["CONTAINER_ID"]
         )
 
-    with c2:
+        st.caption(
+            f'{container["COMMODITY"]} · '
+            f'{container["ORIGIN"]} → '
+            f'{container["DESTINATION"]}'
+        )
+
+
+    with h2:
 
         st.metric(
             "Risk Level",
             container["OVERALL_RISK"]
         )
 
-    with c3:
+
+    # --------------------------------------------------------
+    # CONTAINER SUMMARY
+    # --------------------------------------------------------
+
+    s1, s2, s3, s4 = st.columns(4)
+
+
+    with s1:
+
+        st.metric(
+            "Commodity",
+            container["COMMODITY"]
+        )
+
+
+    with s2:
+
+        st.metric(
+            "Risk Level",
+            container["OVERALL_RISK"]
+        )
+
+
+    with s3:
 
         st.metric(
             "Max Spoilage Score",
-            int(container["MAX_SPOILAGE_SCORE"])
+            int(
+                container["MAX_SPOILAGE_SCORE"]
+            )
         )
 
-    with c4:
+
+    with s4:
 
         st.metric(
             "Risk Events",
-            int(container["RISK_EVENTS"])
+            int(
+                container["RISK_EVENTS"]
+            )
         )
 
-    st.write("")
 
     # --------------------------------------------------------
     # SHIPMENT PROFILE
     # --------------------------------------------------------
 
-    profile_col1, profile_col2 = st.columns(2)
+    st.markdown(
+        '<div class="section-title">'
+        'Shipment Profile'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
-    with profile_col1:
 
-        st.markdown(
-            '<div class="section-title">'
-            'Shipment Route'
-            '</div>',
-            unsafe_allow_html=True
+    route_col, env_col = st.columns(2)
+
+
+    with route_col:
+
+        st.subheader("Shipment Route")
+
+        st.write(
+            f'**Origin:** '
+            f'{container["ORIGIN"]}'
         )
 
-        st.markdown(
-            f"""
-            <div class="telemetry-card">
+        st.write("↓")
 
-                <div style="
-                    color:#7f8b99;
-                    font-size:10px;
-                    text-transform:uppercase;
-                    letter-spacing:1.3px;
-                ">
-                    Origin
-                </div>
-
-                <div style="
-                    color:#f4f7fa;
-                    font-size:18px;
-                    font-weight:650;
-                    margin-top:4px;
-                ">
-                    {container["ORIGIN"]}
-                </div>
-
-                <div style="
-                    color:#667481;
-                    font-size:20px;
-                    margin:6px 0;
-                ">
-                    ↓
-                </div>
-
-                <div style="
-                    color:#7f8b99;
-                    font-size:10px;
-                    text-transform:uppercase;
-                    letter-spacing:1.3px;
-                ">
-                    Destination
-                </div>
-
-                <div style="
-                    color:#f4f7fa;
-                    font-size:18px;
-                    font-weight:650;
-                    margin-top:4px;
-                ">
-                    {container["DESTINATION"]}
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
+        st.write(
+            f'**Destination:** '
+            f'{container["DESTINATION"]}'
         )
 
-    with profile_col2:
 
-        st.markdown(
-            '<div class="section-title">'
-            'Environmental Profile'
-            '</div>',
-            unsafe_allow_html=True
+    with env_col:
+
+        st.subheader(
+            "Environmental Profile"
         )
 
-        st.markdown(
-            f"""
-            <div class="telemetry-card">
+        e1, e2 = st.columns(2)
 
-                <div style="
-                    display:grid;
-                    grid-template-columns:1fr 1fr;
-                    gap:18px;
-                ">
 
-                    <div>
-                        <div style="
-                            color:#7f8b99;
-                            font-size:10px;
-                            text-transform:uppercase;
-                            letter-spacing:1.3px;
-                        ">
-                            Avg Temperature
-                        </div>
+        with e1:
 
-                        <div style="
-                            color:#f4f7fa;
-                            font-size:22px;
-                            font-weight:700;
-                            margin-top:5px;
-                        ">
-                            {container["AVG_TEMPERATURE"]} °C
-                        </div>
-                    </div>
+            st.metric(
+                "Avg Temperature",
+                f'{container["AVG_TEMPERATURE"]:.2f} °C'
+            )
 
-                    <div>
-                        <div style="
-                            color:#7f8b99;
-                            font-size:10px;
-                            text-transform:uppercase;
-                            letter-spacing:1.3px;
-                        ">
-                            Avg Humidity
-                        </div>
 
-                        <div style="
-                            color:#f4f7fa;
-                            font-size:22px;
-                            font-weight:700;
-                            margin-top:5px;
-                        ">
-                            {container["AVG_HUMIDITY"]} %
-                        </div>
-                    </div>
+        with e2:
 
-                </div>
+            st.metric(
+                "Avg Humidity",
+                f'{container["AVG_HUMIDITY"]:.2f} %'
+            )
 
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
 
     # --------------------------------------------------------
     # ENVIRONMENTAL TELEMETRY
@@ -1126,408 +985,327 @@ elif page == "Container Intelligence":
 
     st.markdown(
         '<div class="section-subtitle">'
-        'Live environmental movement captured from container telemetry'
+        'Environmental movement captured from container telemetry'
         '</div>',
         unsafe_allow_html=True
     )
 
-    trend_col1, trend_col2 = st.columns(2)
 
-    # --------------------------------------------------------
-    # TEMPERATURE
-    # --------------------------------------------------------
+    if container_telemetry.empty:
 
-    with trend_col1:
-
-        fig = px.line(
-            container_telemetry,
-            x="TIMESTAMP",
-            y="TEMPERATURE",
-            markers=True,
-            title="Temperature"
-        )
-
-        fig.add_hline(
-            y=30,
-            line_dash="dash",
-            annotation_text="Risk threshold · 30°C",
-            annotation_position="top left"
-        )
-
-        fig.update_traces(
-            line=dict(width=2),
-            marker=dict(size=7)
-        )
-
-        fig.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#dbe2e8"),
-            height=340,
-            margin=dict(l=20, r=20, t=55, b=35),
-            hovermode="x unified"
-        )
-
-        fig.update_xaxes(
-            showgrid=False,
-            title=""
-        )
-
-        fig.update_yaxes(
-            gridcolor="#202832",
-            title="Temperature °C"
-        )
-
-        st.plotly_chart(
-            fig,
-            width="stretch"
-        )
-
-    # --------------------------------------------------------
-    # HUMIDITY
-    # --------------------------------------------------------
-
-    with trend_col2:
-
-        fig = px.line(
-            container_telemetry,
-            x="TIMESTAMP",
-            y="HUMIDITY",
-            markers=True,
-            title="Humidity"
-        )
-
-        fig.add_hline(
-            y=75,
-            line_dash="dash",
-            annotation_text="Risk threshold · 75%",
-            annotation_position="top left"
-        )
-
-        fig.update_traces(
-            line=dict(width=2),
-            marker=dict(size=7)
-        )
-
-        fig.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#dbe2e8"),
-            height=340,
-            margin=dict(l=20, r=20, t=55, b=35),
-            hovermode="x unified"
-        )
-
-        fig.update_xaxes(
-            showgrid=False,
-            title=""
-        )
-
-        fig.update_yaxes(
-            gridcolor="#202832",
-            title="Humidity %"
-        )
-
-        st.plotly_chart(
-            fig,
-            width="stretch"
-        )
-
-    # --------------------------------------------------------
-    # VIBRATION + SPOILAGE
-    # --------------------------------------------------------
-
-    st.markdown(
-        '<div class="section-title">'
-        'Risk Signals'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Mechanical movement and calculated spoilage exposure'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    vibration_col, spoilage_col = st.columns(2)
-
-    # --------------------------------------------------------
-    # VIBRATION
-    # --------------------------------------------------------
-
-    with vibration_col:
-
-        fig = px.line(
-            container_telemetry,
-            x="TIMESTAMP",
-            y="VIBRATION",
-            markers=True,
-            title="Vibration Trend"
-        )
-
-        fig.update_traces(
-            line=dict(width=2),
-            marker=dict(size=7)
-        )
-
-        fig.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#dbe2e8"),
-            height=340,
-            margin=dict(l=20, r=20, t=55, b=35),
-            hovermode="x unified"
-        )
-
-        fig.update_xaxes(
-            showgrid=False,
-            title=""
-        )
-
-        fig.update_yaxes(
-            gridcolor="#202832",
-            title="Vibration"
-        )
-
-        st.plotly_chart(
-            fig,
-            width="stretch"
-        )
-
-    # --------------------------------------------------------
-    # SPOILAGE SCORE
-    # --------------------------------------------------------
-
-    with spoilage_col:
-
-        fig = px.bar(
-            container_telemetry,
-            x="TIMESTAMP",
-            y="SPOILAGE_SCORE",
-            title="Spoilage Risk Trend"
-        )
-
-        fig.update_yaxes(
-            range=[0, 85],
-            title="Spoilage Score"
-        )
-
-        fig.update_xaxes(
-            showgrid=False,
-            title=""
-        )
-
-        fig.update_traces(
-            marker_line_width=0,
-            opacity=0.9
-        )
-
-        fig.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#dbe2e8"),
-            height=340,
-            margin=dict(l=20, r=20, t=55, b=35),
-            hovermode="x unified"
-        )
-
-        st.plotly_chart(
-            fig,
-            width="stretch"
-        )
-
-    # --------------------------------------------------------
-    # RISK SUMMARY
-    # --------------------------------------------------------
-
-    st.markdown(
-        '<div class="section-title">'
-        'Risk Summary'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    risk_summary_col1, risk_summary_col2, risk_summary_col3 = st.columns(3)
-
-    total_readings = len(container_telemetry)
-
-    high_count = int(
-        (container_telemetry["SPOILAGE_LEVEL"] == "HIGH").sum()
-    )
-
-    medium_count = int(
-        (container_telemetry["SPOILAGE_LEVEL"] == "MEDIUM").sum()
-    )
-
-    low_count = int(
-        (container_telemetry["SPOILAGE_LEVEL"] == "LOW").sum()
-    )
-
-    with risk_summary_col1:
-
-        st.metric(
-            "High-Risk Readings",
-            high_count,
-            f"{high_count}/{total_readings} readings"
-        )
-
-    with risk_summary_col2:
-
-        st.metric(
-            "Medium-Risk Readings",
-            medium_count,
-            f"{medium_count}/{total_readings} readings"
-        )
-
-    with risk_summary_col3:
-
-        st.metric(
-            "Normal Readings",
-            low_count,
-            f"{low_count}/{total_readings} readings"
-        )
-
-    # --------------------------------------------------------
-    # CONTAINER TELEMETRY TABLE
-    # --------------------------------------------------------
-
-    st.markdown(
-        '<div class="section-title">'
-        'Telemetry Readings'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Detailed environmental observations for the selected container'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    telemetry_display = container_telemetry[
-        [
-            "TIMESTAMP",
-            "container_id",
-            "commodity",
-            "temperature",
-            "humidity",
-            "vibration",
-            "SPOILAGE_SCORE",
-            "SPOILAGE_LEVEL"
-        ]
-    ].copy()
-
-    telemetry_display.columns = [
-        "Timestamp",
-        "Container",
-        "Commodity",
-        "Temperature °C",
-        "Humidity %",
-        "Vibration",
-        "Spoilage Score",
-        "Risk Level"
-    ]
-
-    st.dataframe(
-        telemetry_display,
-        width="stretch",
-        hide_index=True,
-        height=360
-    )
-
-    # --------------------------------------------------------
-    # OPERATIONAL ALERT
-    # --------------------------------------------------------
-
-    if container["OVERALL_RISK"] == "HIGH":
-
-        st.markdown(
-            f"""
-            <div class="alert-card">
-
-                <div class="alert-title">
-                    ⚠ High-Risk Shipment Detected
-                </div>
-
-                <div class="alert-detail">
-                    {container["CONTAINER_ID"]} carrying
-                    {container["COMMODITY"]} requires operational attention.
-                    Maximum spoilage score:
-                    {int(container["MAX_SPOILAGE_SCORE"])}.
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    elif container["OVERALL_RISK"] == "MEDIUM":
-
-        st.markdown(
-            f"""
-            <div class="telemetry-card">
-
-                <div style="
-                    color:#d9c58a;
-                    font-size:13px;
-                    font-weight:650;
-                ">
-                    ◐ Monitoring Required
-                </div>
-
-                <div style="
-                    color:#7f8995;
-                    font-size:12px;
-                    margin-top:5px;
-                ">
-                    {container["CONTAINER_ID"]} is showing moderate
-                    environmental exposure.
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
+        st.warning(
+            "No telemetry data available for this container."
         )
 
     else:
 
+        temp_col, humidity_col = st.columns(2)
+
+
+        with temp_col:
+
+            fig = px.line(
+                container_telemetry,
+                x="TIMESTAMP",
+                y="TEMPERATURE",
+                markers=True,
+                title="Temperature"
+            )
+
+
+            fig.add_hline(
+                y=30,
+                line_dash="dash",
+                annotation_text="Risk threshold · 30°C"
+            )
+
+
+            fig.update_layout(
+                template="plotly_dark",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#dbe2e8"),
+                height=340
+            )
+
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+
+        with humidity_col:
+
+            fig = px.line(
+                container_telemetry,
+                x="TIMESTAMP",
+                y="HUMIDITY",
+                markers=True,
+                title="Humidity"
+            )
+
+
+            fig.add_hline(
+                y=75,
+                line_dash="dash",
+                annotation_text="Risk threshold · 75%"
+            )
+
+
+            fig.update_layout(
+                template="plotly_dark",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#dbe2e8"),
+                height=340
+            )
+
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+
+        # ----------------------------------------------------
+        # RISK SIGNALS
+        # ----------------------------------------------------
+
         st.markdown(
-            f"""
-            <div class="telemetry-card">
+            '<div class="section-title">'
+            'Risk Signals'
+            '</div>',
+            unsafe_allow_html=True
+        )
 
-                <div style="
-                    color:#9ed7b8;
-                    font-size:13px;
-                    font-weight:650;
-                ">
-                    ✓ Shipment Environment Stable
-                </div>
-
-                <div style="
-                    color:#7f8995;
-                    font-size:12px;
-                    margin-top:5px;
-                ">
-                    {container["CONTAINER_ID"]} currently shows
-                    low spoilage exposure.
-                </div>
-
-            </div>
-            """,
+        st.markdown(
+            '<div class="section-subtitle">'
+            'Mechanical movement and calculated spoilage exposure'
+            '</div>',
             unsafe_allow_html=True
         )
 
 
-# ============================================================
-# ANALYTICS
-# ============================================================
+        vibration_col, spoilage_col = st.columns(2)
+
+
+        with vibration_col:
+
+            fig = px.line(
+                container_telemetry,
+                x="TIMESTAMP",
+                y="VIBRATION",
+                markers=True,
+                title="Vibration Trend"
+            )
+
+
+            fig.update_layout(
+                template="plotly_dark",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#dbe2e8"),
+                height=340
+            )
+
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+
+        with spoilage_col:
+
+            fig = px.bar(
+                container_telemetry,
+                x="TIMESTAMP",
+                y="SPOILAGE_SCORE",
+                title="Spoilage Risk Trend"
+            )
+
+
+            fig.update_yaxes(
+                range=[0, 85]
+            )
+
+
+            fig.update_layout(
+                template="plotly_dark",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#dbe2e8"),
+                height=340
+            )
+
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+
+        # ----------------------------------------------------
+        # RISK SUMMARY
+        # ----------------------------------------------------
+
+        st.markdown(
+            '<div class="section-title">'
+            'Risk Summary'
+            '</div>',
+            unsafe_allow_html=True
+        )
+
+
+        total_readings = len(
+            container_telemetry
+        )
+
+
+        high_count = int(
+            (
+                container_telemetry[
+                    "SPOILAGE_LEVEL"
+                ] == "HIGH"
+            ).sum()
+        )
+
+
+        medium_count = int(
+            (
+                container_telemetry[
+                    "SPOILAGE_LEVEL"
+                ] == "MEDIUM"
+            ).sum()
+        )
+
+
+        low_count = int(
+            (
+                container_telemetry[
+                    "SPOILAGE_LEVEL"
+                ] == "LOW"
+            ).sum()
+        )
+
+
+        r1, r2, r3 = st.columns(3)
+
+
+        with r1:
+
+            st.metric(
+                "High-Risk Readings",
+                high_count,
+                f"{high_count}/{total_readings}"
+            )
+
+
+        with r2:
+
+            st.metric(
+                "Medium-Risk Readings",
+                medium_count,
+                f"{medium_count}/{total_readings}"
+            )
+
+
+        with r3:
+
+            st.metric(
+                "Normal Readings",
+                low_count,
+                f"{low_count}/{total_readings}"
+            )
+
+
+        # ----------------------------------------------------
+        # TELEMETRY READINGS
+        # ----------------------------------------------------
+
+        st.markdown(
+            '<div class="section-title">'
+            'Telemetry Readings'
+            '</div>',
+            unsafe_allow_html=True
+        )
+
+
+        telemetry_display = container_telemetry[
+            [
+                "TIMESTAMP",
+                "container_id",
+                "commodity",
+                "temperature",
+                "humidity",
+                "vibration",
+                "SPOILAGE_SCORE",
+                "SPOILAGE_LEVEL"
+            ]
+        ].copy()
+
+
+        telemetry_display.columns = [
+            "Timestamp",
+            "Container",
+            "Commodity",
+            "Temperature °C",
+            "Humidity %",
+            "Vibration",
+            "Spoilage Score",
+            "Risk Level"
+        ]
+
+
+        st.dataframe(
+            telemetry_display,
+            use_container_width=True,
+            hide_index=True,
+            height=360
+        )
+
+
+        # ----------------------------------------------------
+        # OPERATIONAL ALERT
+        # ----------------------------------------------------
+
+        st.markdown(
+            '<div class="section-title">'
+            'Operational Alert'
+            '</div>',
+            unsafe_allow_html=True
+        )
+
+
+        if container["OVERALL_RISK"] == "HIGH":
+
+            st.error(
+                f'⚠ High-Risk Shipment Detected\n\n'
+                f'{container["CONTAINER_ID"]} carrying '
+                f'{container["COMMODITY"]} requires operational '
+                f'attention. Maximum spoilage score: '
+                f'{int(container["MAX_SPOILAGE_SCORE"])}.'
+            )
+
+
+        elif container["OVERALL_RISK"] == "MEDIUM":
+
+            st.warning(
+                f'◐ Monitoring Required\n\n'
+                f'{container["CONTAINER_ID"]} is showing '
+                f'moderate environmental exposure.'
+            )
+
+
+        else:
+
+            st.success(
+                f'✓ Shipment Environment Stable\n\n'
+                f'{container["CONTAINER_ID"]} currently shows '
+                f'low spoilage exposure.'
+            )
+
 
 # ============================================================
 # ANALYTICS
@@ -1544,50 +1322,42 @@ elif page == "Analytics":
 
     st.markdown(
         '<div class="section-subtitle">'
-        'Fleet-level environmental, commodity and spoilage-risk intelligence'
+        'Fleet-level environmental and spoilage-risk analysis'
         '</div>',
         unsafe_allow_html=True
     )
 
+
     # --------------------------------------------------------
-    # ANALYTICS KPI ROW
+    # ANALYTICS KPIs
     # --------------------------------------------------------
-
-    total_readings = len(telemetry)
-
-    avg_temperature = telemetry["TEMPERATURE"].mean()
-
-    avg_humidity = telemetry["HUMIDITY"].mean()
-
-    total_risk_events = int(
-        (
-            telemetry["SPOILAGE_LEVEL"]
-            .isin(["HIGH", "MEDIUM"])
-        ).sum()
-    )
 
     a1, a2, a3, a4 = st.columns(4)
+
 
     with a1:
 
         st.metric(
             "Telemetry Readings",
-            f"{total_readings:02d}"
+            len(telemetry)
         )
+
 
     with a2:
 
         st.metric(
-            "Avg Temperature",
-            f"{avg_temperature:.1f} °C"
+            "Average Temperature",
+            f'{telemetry["TEMPERATURE"].mean():.2f} °C'
         )
+
 
     with a3:
 
         st.metric(
-            "Avg Humidity",
-            f"{avg_humidity:.1f} %"
+            "Average Humidity",
+            f'{telemetry["HUMIDITY"].mean():.2f} %'
         )
+
 
     with a4:
 
@@ -1596,7 +1366,82 @@ elif page == "Analytics":
             total_risk_events
         )
 
-    st.write("")
+
+    # --------------------------------------------------------
+    # RISK SCORE + ENVIRONMENT
+    # --------------------------------------------------------
+
+    col1, col2 = st.columns(2)
+
+
+    with col1:
+
+        fig = px.bar(
+            data,
+            x="CONTAINER_ID",
+            y="AVG_SPOILAGE_SCORE",
+            color="OVERALL_RISK",
+            hover_data=[
+                "COMMODITY",
+                "RISK_EVENTS"
+            ],
+            title="Average Spoilage Score by Container"
+        )
+
+
+        fig.update_layout(
+            template="plotly_dark",
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#dbe2e8")
+        )
+
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
+
+
+    with col2:
+
+        fig = go.Figure()
+
+
+        fig.add_trace(
+            go.Scatter(
+                x=telemetry["TIMESTAMP"],
+                y=telemetry["TEMPERATURE"],
+                mode="lines+markers",
+                name="Temperature"
+            )
+        )
+
+
+        fig.add_trace(
+            go.Scatter(
+                x=telemetry["TIMESTAMP"],
+                y=telemetry["HUMIDITY"],
+                mode="lines+markers",
+                name="Humidity"
+            )
+        )
+
+
+        fig.update_layout(
+            title="Telemetry Environmental Conditions",
+            template="plotly_dark",
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#dbe2e8")
+        )
+
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
+
 
     # --------------------------------------------------------
     # ENVIRONMENTAL ANALYSIS
@@ -1609,213 +1454,124 @@ elif page == "Analytics":
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Distribution of temperature and humidity across all monitored readings'
-        '</div>',
-        unsafe_allow_html=True
-    )
 
-    env_col1, env_col2 = st.columns(2)
+    e1, e2 = st.columns(2)
 
-    # --------------------------------------------------------
-    # TEMPERATURE DISTRIBUTION
-    # --------------------------------------------------------
 
-    with env_col1:
+    with e1:
 
         fig = px.histogram(
             telemetry,
             x="TEMPERATURE",
-            nbins=12,
+            nbins=10,
             title="Temperature Distribution"
         )
 
-        fig.add_vline(
-            x=30,
-            line_dash="dash",
-            annotation_text="Risk threshold · 30°C",
-            annotation_position="top right"
-        )
 
         fig.update_layout(
             template="plotly_dark",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#dbe2e8"),
-            height=340,
-            margin=dict(l=20, r=20, t=55, b=35)
+            font=dict(color="#dbe2e8")
         )
 
-        fig.update_xaxes(
-            title="Temperature °C",
-            showgrid=False
-        )
-
-        fig.update_yaxes(
-            title="Readings",
-            gridcolor="#202832"
-        )
 
         st.plotly_chart(
             fig,
-            width="stretch"
+            use_container_width=True
         )
 
-    # --------------------------------------------------------
-    # HUMIDITY DISTRIBUTION
-    # --------------------------------------------------------
 
-    with env_col2:
+    with e2:
 
         fig = px.histogram(
             telemetry,
             x="HUMIDITY",
-            nbins=12,
+            nbins=10,
             title="Humidity Distribution"
         )
 
-        fig.add_vline(
-            x=75,
-            line_dash="dash",
-            annotation_text="Risk threshold · 75%",
-            annotation_position="top right"
-        )
 
         fig.update_layout(
             template="plotly_dark",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#dbe2e8"),
-            height=340,
-            margin=dict(l=20, r=20, t=55, b=35)
+            font=dict(color="#dbe2e8")
         )
 
-        fig.update_xaxes(
-            title="Humidity %",
-            showgrid=False
-        )
-
-        fig.update_yaxes(
-            title="Readings",
-            gridcolor="#202832"
-        )
 
         st.plotly_chart(
             fig,
-            width="stretch"
+            use_container_width=True
         )
 
+
     # --------------------------------------------------------
-    # SPOILAGE + RISK ANALYSIS
+    # RISK EVENTS
     # --------------------------------------------------------
 
     st.markdown(
         '<div class="section-title">'
-        'Spoilage Risk Analysis'
+        'Risk Events by Container'
         '</div>',
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Calculated risk indicators across the monitored container fleet'
-        '</div>',
-        unsafe_allow_html=True
+
+    risk_events = (
+        telemetry
+        .groupby("container_id")
+        .agg(
+            Total_Readings=(
+                "container_id",
+                "size"
+            ),
+            High_Risk_Readings=(
+                "SPOILAGE_LEVEL",
+                lambda x: (
+                    x == "HIGH"
+                ).sum()
+            ),
+            Medium_Risk_Readings=(
+                "SPOILAGE_LEVEL",
+                lambda x: (
+                    x == "MEDIUM"
+                ).sum()
+            ),
+            Average_Score=(
+                "SPOILAGE_SCORE",
+                "mean"
+            )
+        )
+        .reset_index()
     )
 
-    risk_col1, risk_col2 = st.columns(2)
+
+    risk_events[
+        "Average_Score"
+    ] = risk_events[
+        "Average_Score"
+    ].round(2)
+
+
+    risk_events.columns = [
+        "Container",
+        "Total Readings",
+        "High-Risk Readings",
+        "Medium-Risk Readings",
+        "Average Score"
+    ]
+
+
+    st.dataframe(
+        risk_events,
+        use_container_width=True,
+        hide_index=True
+    )
+
 
     # --------------------------------------------------------
-    # AVERAGE SPOILAGE SCORE
-    # --------------------------------------------------------
-
-    with risk_col1:
-
-        score_data = data.sort_values(
-            "AVG_SPOILAGE_SCORE",
-            ascending=True
-        )
-
-        fig = px.bar(
-            score_data,
-            x="AVG_SPOILAGE_SCORE",
-            y="CONTAINER_ID",
-            orientation="h",
-            title="Average Spoilage Score",
-            hover_data=[
-                "COMMODITY",
-                "RISK_EVENTS",
-                "OVERALL_RISK"
-            ]
-        )
-
-        fig.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#dbe2e8"),
-            height=360,
-            margin=dict(l=20, r=20, t=55, b=35)
-        )
-
-        fig.update_xaxes(
-            range=[0, 85],
-            title="Average Spoilage Score",
-            gridcolor="#202832"
-        )
-
-        fig.update_yaxes(
-            title=""
-        )
-
-        st.plotly_chart(
-            fig,
-            width="stretch"
-        )
-
-    # --------------------------------------------------------
-    # RISK LEVEL DISTRIBUTION
-    # --------------------------------------------------------
-
-    with risk_col2:
-
-        risk_counts = (
-            telemetry["SPOILAGE_LEVEL"]
-            .value_counts()
-            .reindex(
-                ["HIGH", "MEDIUM", "LOW"],
-                fill_value=0
-            )
-        )
-
-        fig = px.pie(
-            values=risk_counts.values,
-            names=risk_counts.index,
-            hole=0.58,
-            title="Telemetry Risk Distribution"
-        )
-
-        fig.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#dbe2e8"),
-            height=360,
-            margin=dict(l=20, r=20, t=55, b=35),
-            legend=dict(
-                orientation="h",
-                y=-0.05
-            )
-        )
-
-        st.plotly_chart(
-            fig,
-            width="stretch"
-        )
-
-    # --------------------------------------------------------
-    # ENVIRONMENT vs SPOILAGE
+    # ENVIRONMENTAL RISK RELATIONSHIP
     # --------------------------------------------------------
 
     st.markdown(
@@ -1825,63 +1581,47 @@ elif page == "Analytics":
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Relationship between temperature, humidity and calculated spoilage exposure'
-        '</div>',
-        unsafe_allow_html=True
-    )
 
     fig = px.scatter(
         telemetry,
         x="TEMPERATURE",
         y="HUMIDITY",
         size="SPOILAGE_SCORE",
-        hover_name="container_id",
+        color="SPOILAGE_LEVEL",
         hover_data=[
+            "container_id",
             "commodity",
-            "origin",
-            "destination",
-            "SPOILAGE_LEVEL"
+            "vibration"
         ],
-        title="Temperature vs Humidity Exposure"
+        title="Temperature vs Humidity Risk"
     )
+
 
     fig.add_vline(
         x=30,
-        line_dash="dash",
-        annotation_text="30°C"
+        line_dash="dash"
     )
+
 
     fig.add_hline(
         y=75,
-        line_dash="dash",
-        annotation_text="75%"
+        line_dash="dash"
     )
+
 
     fig.update_layout(
         template="plotly_dark",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#dbe2e8"),
-        height=430,
-        margin=dict(l=20, r=20, t=55, b=35)
+        font=dict(color="#dbe2e8")
     )
 
-    fig.update_xaxes(
-        title="Temperature °C",
-        gridcolor="#202832"
-    )
-
-    fig.update_yaxes(
-        title="Humidity %",
-        gridcolor="#202832"
-    )
 
     st.plotly_chart(
         fig,
-        width="stretch"
+        use_container_width=True
     )
+
 
     # --------------------------------------------------------
     # COMMODITY INTELLIGENCE
@@ -1894,66 +1634,57 @@ elif page == "Analytics":
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Risk exposure across different agricultural commodities'
-        '</div>',
-        unsafe_allow_html=True
-    )
 
     commodity_data = (
-        telemetry
-        .groupby("commodity")
+        data
+        .groupby("COMMODITY")
         .agg(
-            Readings=("commodity", "size"),
-            Average_Temperature=("TEMPERATURE", "mean"),
-            Average_Humidity=("HUMIDITY", "mean"),
-            Average_Spoilage_Score=("SPOILAGE_SCORE", "mean"),
-            High_Risk_Readings=(
-                "SPOILAGE_LEVEL",
-                lambda x: (x == "HIGH").sum()
+            Containers=(
+                "CONTAINER_ID",
+                "nunique"
             ),
-            Risk_Readings=(
-                "SPOILAGE_LEVEL",
-                lambda x: x.isin(
-                    ["HIGH", "MEDIUM"]
-                ).sum()
+            Risk_Events=(
+                "RISK_EVENTS",
+                "sum"
+            ),
+            Average_Spoilage_Score=(
+                "AVG_SPOILAGE_SCORE",
+                "mean"
+            ),
+            Maximum_Spoilage_Score=(
+                "MAX_SPOILAGE_SCORE",
+                "max"
             )
         )
         .reset_index()
     )
 
+
     commodity_data[
-        [
-            "Average_Temperature",
-            "Average_Humidity",
-            "Average_Spoilage_Score"
-        ]
+        "Average_Spoilage_Score"
     ] = commodity_data[
-        [
-            "Average_Temperature",
-            "Average_Humidity",
-            "Average_Spoilage_Score"
-        ]
+        "Average_Spoilage_Score"
     ].round(2)
+
 
     commodity_display = commodity_data.copy()
 
+
     commodity_display.columns = [
         "Commodity",
-        "Readings",
-        "Avg Temperature °C",
-        "Avg Humidity %",
-        "Avg Spoilage Score",
-        "High-Risk Readings",
-        "Risk Readings"
+        "Containers",
+        "Risk Events",
+        "Average Spoilage Score",
+        "Maximum Spoilage Score"
     ]
+
 
     st.dataframe(
         commodity_display,
-        width="stretch",
+        use_container_width=True,
         hide_index=True
     )
+
 
     # --------------------------------------------------------
     # ROUTE INTELLIGENCE
@@ -1966,86 +1697,83 @@ elif page == "Analytics":
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Environmental risk observed across active shipment routes'
-        '</div>',
-        unsafe_allow_html=True
-    )
 
     route_data = (
-        telemetry
+        data
         .groupby(
-            ["origin", "destination"]
+            [
+                "ORIGIN",
+                "DESTINATION"
+            ]
         )
         .agg(
-            Readings=("container_id", "size"),
-            Containers=("container_id", "nunique"),
-            Average_Temperature=("TEMPERATURE", "mean"),
-            Average_Humidity=("HUMIDITY", "mean"),
-            Average_Spoilage_Score=("SPOILAGE_SCORE", "mean"),
-            Risk_Readings=(
-                "SPOILAGE_LEVEL",
-                lambda x: x.isin(
-                    ["HIGH", "MEDIUM"]
-                ).sum()
+            Containers=(
+                "CONTAINER_ID",
+                "nunique"
+            ),
+            Risk_Events=(
+                "RISK_EVENTS",
+                "sum"
+            ),
+            Average_Spoilage_Score=(
+                "AVG_SPOILAGE_SCORE",
+                "mean"
+            ),
+            Maximum_Spoilage_Score=(
+                "MAX_SPOILAGE_SCORE",
+                "max"
             )
         )
         .reset_index()
     )
 
+
     route_data[
-        [
-            "Average_Temperature",
-            "Average_Humidity",
-            "Average_Spoilage_Score"
-        ]
+        "Average_Spoilage_Score"
     ] = route_data[
-        [
-            "Average_Temperature",
-            "Average_Humidity",
-            "Average_Spoilage_Score"
-        ]
+        "Average_Spoilage_Score"
     ].round(2)
+
 
     route_display = route_data.copy()
 
+
     route_display["Route"] = (
-        route_display["origin"]
+        route_display["ORIGIN"]
         + " → "
-        + route_display["destination"]
+        + route_display["DESTINATION"]
     )
+
 
     route_display = route_display[
         [
             "Route",
             "Containers",
-            "Readings",
-            "Average_Temperature",
-            "Average_Humidity",
+            "Risk_Events",
             "Average_Spoilage_Score",
-            "Risk_Readings"
+            "Maximum_Spoilage_Score"
         ]
     ]
+
 
     route_display.columns = [
         "Route",
         "Containers",
-        "Readings",
-        "Avg Temperature °C",
-        "Avg Humidity %",
-        "Avg Spoilage Score",
-        "Risk Readings"
+        "Risk Events",
+        "Average Spoilage Score",
+        "Maximum Spoilage Score"
     ]
+
 
     st.dataframe(
         route_display,
-        width="stretch",
+        use_container_width=True,
         hide_index=True
     )
 
+
     # --------------------------------------------------------
-    # RISK EVENTS BY CONTAINER
+    # CONTAINER RISK MATRIX
     # --------------------------------------------------------
 
     st.markdown(
@@ -2055,72 +1783,41 @@ elif page == "Analytics":
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Detailed risk-event profile for every monitored container'
-        '</div>',
-        unsafe_allow_html=True
-    )
 
-    risk_events = (
-        telemetry
-        .groupby("container_id")
-        .agg(
-            Total_Readings=("container_id", "size"),
-
-            High_Risk_Readings=(
-                "SPOILAGE_LEVEL",
-                lambda x: (x == "HIGH").sum()
-            ),
-
-            Medium_Risk_Readings=(
-                "SPOILAGE_LEVEL",
-                lambda x: (x == "MEDIUM").sum()
-            ),
-
-            Average_Score=(
-                "SPOILAGE_SCORE",
-                "mean"
-            ),
-
-            Maximum_Score=(
-                "SPOILAGE_SCORE",
-                "max"
-            )
-        )
-        .reset_index()
-    )
-
-    risk_events[
+    matrix = data[
         [
-            "Average_Score",
-            "Maximum_Score"
+            "CONTAINER_ID",
+            "COMMODITY",
+            "TOTAL_READINGS",
+            "RISK_EVENTS",
+            "AVG_SPOILAGE_SCORE",
+            "MAX_SPOILAGE_SCORE",
+            "OVERALL_RISK"
         ]
-    ] = risk_events[
-        [
-            "Average_Score",
-            "Maximum_Score"
-        ]
-    ].round(2)
+    ].copy()
 
-    risk_events.columns = [
+
+    matrix.columns = [
         "Container",
+        "Commodity",
         "Total Readings",
-        "High-Risk Readings",
-        "Medium-Risk Readings",
+        "Risk Events",
         "Average Score",
-        "Maximum Score"
+        "Maximum Score",
+        "Risk Level"
     ]
 
+
     st.dataframe(
-        risk_events,
-        width="stretch",
+        matrix,
+        use_container_width=True,
         hide_index=True
     )
 
-    # --------------------------------------------------------
-    # AUTOMATED INSIGHTS
-    # --------------------------------------------------------
+
+    # ========================================================
+    # OPERATIONAL INSIGHTS
+    # ========================================================
 
     st.markdown(
         '<div class="section-title">'
@@ -2129,99 +1826,172 @@ elif page == "Analytics":
         unsafe_allow_html=True
     )
 
-    highest_risk_container = data.loc[
-        data["AVG_SPOILAGE_SCORE"].idxmax()
-    ]
-
-    highest_risk_commodity = commodity_data.loc[
-        commodity_data["Average_Spoilage_Score"].idxmax()
-    ]
-
-    highest_risk_route = route_data.loc[
-        route_data["Average_Spoilage_Score"].idxmax()
-    ]
-
-    insight_col1, insight_col2 = st.columns(2)
-
-    with insight_col1:
-
-        st.markdown(
-            f"""
-            <div class="alert-card">
-
-                <div class="alert-title">
-                    Highest Exposure Container
-                </div>
-
-                <div class="alert-detail">
-                    {highest_risk_container["CONTAINER_ID"]}
-                    · {highest_risk_container["COMMODITY"]}
-                    has the highest average spoilage score
-                    of {highest_risk_container["AVG_SPOILAGE_SCORE"]}.
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with insight_col2:
-
-        st.markdown(
-            f"""
-            <div class="telemetry-card">
-
-                <div style="
-                    color:#dbe2e8;
-                    font-size:13px;
-                    font-weight:650;
-                ">
-                    Highest-Risk Commodity
-                </div>
-
-                <div style="
-                    color:#7f8995;
-                    font-size:12px;
-                    margin-top:5px;
-                ">
-                    {highest_risk_commodity["commodity"]}
-                    shows the highest average spoilage score
-                    at {highest_risk_commodity["Average_Spoilage_Score"]}.
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
 
     st.markdown(
-        f"""
-        <div class="telemetry-card">
-
-            <div style="
-                color:#dbe2e8;
-                font-size:13px;
-                font-weight:650;
-            ">
-                Highest-Risk Route
-            </div>
-
-            <div style="
-                color:#7f8995;
-                font-size:12px;
-                margin-top:5px;
-            ">
-                {highest_risk_route["origin"]}
-                →
-                {highest_risk_route["destination"]}
-                currently shows the highest average spoilage
-                score of {highest_risk_route["Average_Spoilage_Score"]}.
-            </div>
-
-        </div>
-        """,
+        '<div class="section-subtitle">'
+        'Automated observations generated from current telemetry and risk data'
+        '</div>',
         unsafe_allow_html=True
     )
+
+
+    # --------------------------------------------------------
+    # HIGHEST RISK CONTAINER
+    # --------------------------------------------------------
+
+    highest_risk_container = data.loc[
+        data["MAX_SPOILAGE_SCORE"].idxmax()
+    ]
+
+
+    # --------------------------------------------------------
+    # HIGHEST RISK COMMODITY
+    # --------------------------------------------------------
+
+    highest_risk_commodity = (
+        data
+        .groupby("COMMODITY")[
+            "AVG_SPOILAGE_SCORE"
+        ]
+        .mean()
+        .reset_index()
+        .sort_values(
+            "AVG_SPOILAGE_SCORE",
+            ascending=False
+        )
+        .iloc[0]
+    )
+
+
+    # --------------------------------------------------------
+    # HIGHEST RISK ROUTE
+    # --------------------------------------------------------
+
+    highest_risk_route = (
+        data
+        .groupby(
+            [
+                "ORIGIN",
+                "DESTINATION"
+            ]
+        )[
+            "AVG_SPOILAGE_SCORE"
+        ]
+        .mean()
+        .reset_index()
+        .sort_values(
+            "AVG_SPOILAGE_SCORE",
+            ascending=False
+        )
+        .iloc[0]
+    )
+
+
+    i1, i2, i3 = st.columns(3)
+
+
+    with i1:
+
+        st.subheader(
+            "Highest Risk Container"
+        )
+
+        st.metric(
+            "Container",
+            highest_risk_container[
+                "CONTAINER_ID"
+            ]
+        )
+
+        st.write(
+            f'Commodity: '
+            f'{highest_risk_container["COMMODITY"]}'
+        )
+
+        st.write(
+            f'Maximum score: '
+            f'{int(highest_risk_container["MAX_SPOILAGE_SCORE"])}'
+        )
+
+        st.write(
+            f'Risk level: '
+            f'{highest_risk_container["OVERALL_RISK"]}'
+        )
+
+
+    with i2:
+
+        st.subheader(
+            "Highest Risk Commodity"
+        )
+
+        st.metric(
+            "Commodity",
+            highest_risk_commodity[
+                "COMMODITY"
+            ]
+        )
+
+        st.write(
+            f'Average spoilage score: '
+            f'{highest_risk_commodity["AVG_SPOILAGE_SCORE"]:.2f}'
+        )
+
+
+    with i3:
+
+        st.subheader(
+            "Highest Risk Route"
+        )
+
+        st.metric(
+            "Route",
+            f'{highest_risk_route["ORIGIN"]} '
+            f'→ '
+            f'{highest_risk_route["DESTINATION"]}'
+        )
+
+        st.write(
+            f'Average spoilage score: '
+            f'{highest_risk_route["AVG_SPOILAGE_SCORE"]:.2f}'
+        )
+
+
+    # --------------------------------------------------------
+    # DECISION SUPPORT
+    # --------------------------------------------------------
+
+    st.markdown(
+        '<div class="section-title">'
+        'Decision Support'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
+    if high_risk_containers > 0:
+
+        st.warning(
+            f'{high_risk_containers} container(s) currently '
+            f'show HIGH overall risk. These shipments should '
+            f'be prioritized for operational review.'
+        )
+
+    elif medium_risk_containers > 0:
+
+        st.info(
+            f'{medium_risk_containers} container(s) currently '
+            f'show MEDIUM risk. Continue monitoring environmental '
+            f'conditions.'
+        )
+
+    else:
+
+        st.success(
+            'The monitored fleet currently shows stable '
+            'environmental conditions.'
+        )
+
 
     # --------------------------------------------------------
     # LATEST TELEMETRY
@@ -2234,12 +2004,6 @@ elif page == "Analytics":
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Most recent environmental observations received from the telemetry stream'
-        '</div>',
-        unsafe_allow_html=True
-    )
 
     latest_analytics = (
         telemetry
@@ -2250,7 +2014,8 @@ elif page == "Analytics":
         .head(20)
     )
 
-    latest_analytics_display = latest_analytics[
+
+    latest_display = latest_analytics[
         [
             "TIMESTAMP",
             "container_id",
@@ -2265,7 +2030,8 @@ elif page == "Analytics":
         ]
     ].copy()
 
-    latest_analytics_display.columns = [
+
+    latest_display.columns = [
         "Timestamp",
         "Container",
         "Commodity",
@@ -2278,9 +2044,533 @@ elif page == "Analytics":
         "Risk Level"
     ]
 
+
     st.dataframe(
-        latest_analytics_display,
-        width="stretch",
-        hide_index=True,
-        height=420
+        latest_display,
+        use_container_width=True,
+        hide_index=True
     )
+# ============================================================
+# MARKET & SPOILAGE ARBITRAGE
+# ============================================================
+
+elif page == "Market & Arbitrage":
+
+    st.markdown(
+        '<div class="section-title">'
+        'Market & Spoilage Arbitrage'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="section-subtitle">'
+        'Scenario-based decision support combining spoilage risk, '
+        'market value and logistics cost'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    st.info(
+        "Scenario model: market prices, quantities and logistics "
+        "costs are prototype assumptions and are not live market data."
+    )
+
+
+    # --------------------------------------------------------
+    # SELECT COMMODITY
+    # --------------------------------------------------------
+
+    available_commodities = sorted(
+        market_data["COMMODITY"].unique()
+    )
+
+    selected_commodity = st.selectbox(
+        "Select commodity",
+        available_commodities
+    )
+
+
+    # --------------------------------------------------------
+    # FIND CURRENT SHIPMENT
+    # --------------------------------------------------------
+
+    commodity_containers = data[
+        data["COMMODITY"] == selected_commodity
+    ].copy()
+
+
+    if commodity_containers.empty:
+
+        st.warning(
+            "No active shipment found for this commodity."
+        )
+
+    else:
+
+        selected_shipment = commodity_containers.loc[
+            commodity_containers["MAX_SPOILAGE_SCORE"].idxmax()
+        ]
+
+
+        container_id = selected_shipment[
+            "CONTAINER_ID"
+        ]
+
+        current_market = selected_shipment[
+            "DESTINATION"
+        ]
+
+        current_risk = selected_shipment[
+            "OVERALL_RISK"
+        ]
+
+        current_score = float(
+            selected_shipment[
+                "MAX_SPOILAGE_SCORE"
+            ]
+        )
+
+
+        # ----------------------------------------------------
+        # SHIPMENT OVERVIEW
+        # ----------------------------------------------------
+
+        st.markdown(
+            '<div class="section-title">'
+            'Shipment Under Assessment'
+            '</div>',
+            unsafe_allow_html=True
+        )
+
+
+        s1, s2, s3, s4 = st.columns(4)
+
+
+        with s1:
+
+            st.metric(
+                "Container",
+                container_id
+            )
+
+
+        with s2:
+
+            st.metric(
+                "Commodity",
+                selected_commodity
+            )
+
+
+        with s3:
+
+            st.metric(
+                "Current Market",
+                current_market
+            )
+
+
+        with s4:
+
+            st.metric(
+                "Spoilage Score",
+                int(current_score)
+            )
+
+
+        st.caption(
+            f"Current shipment risk level: {current_risk}"
+        )
+
+
+        # ----------------------------------------------------
+        # MARKET OPTIONS
+        # ----------------------------------------------------
+
+        market_options = market_data[
+            (
+                market_data["COMMODITY"]
+                == selected_commodity
+            )
+            &
+            (
+                market_data["CURRENT_MARKET"]
+                == current_market
+            )
+        ].copy()
+
+
+        if market_options.empty:
+
+            st.warning(
+                "No alternative market scenarios are available "
+                "for the selected shipment."
+            )
+
+        else:
+
+            # ------------------------------------------------
+            # ARBITRAGE CALCULATION
+            # ------------------------------------------------
+
+            market_options[
+                "CURRENT_VALUE"
+            ] = (
+                market_options[
+                    "CURRENT_PRICE_PER_KG"
+                ]
+                *
+                market_options[
+                    "QUANTITY_KG"
+                ]
+            )
+
+
+            market_options[
+                "ALTERNATIVE_VALUE"
+            ] = (
+                market_options[
+                    "ALTERNATIVE_PRICE_PER_KG"
+                ]
+                *
+                market_options[
+                    "QUANTITY_KG"
+                ]
+            )
+
+
+            market_options[
+                "CURRENT_LOGISTICS"
+            ] = (
+                market_options[
+                    "CURRENT_LOGISTICS_COST"
+                ]
+                *
+                market_options[
+                    "QUANTITY_KG"
+                ]
+            )
+
+
+            market_options[
+                "ALTERNATIVE_LOGISTICS"
+            ] = (
+                market_options[
+                    "ALTERNATIVE_LOGISTICS_COST"
+                ]
+                *
+                market_options[
+                    "QUANTITY_KG"
+                ]
+            )
+
+
+            # Estimated value impact of current spoilage risk.
+            spoilage_factor = current_score / 100
+
+
+            market_options[
+                "CURRENT_RISK_ADJUSTED_VALUE"
+            ] = (
+                market_options[
+                    "CURRENT_VALUE"
+                ]
+                *
+                (1 - spoilage_factor)
+            )
+
+
+            market_options[
+                "ALTERNATIVE_NET_VALUE"
+            ] = (
+                market_options[
+                    "ALTERNATIVE_VALUE"
+                ]
+                -
+                market_options[
+                    "ALTERNATIVE_LOGISTICS"
+                ]
+            )
+
+
+            market_options[
+                "ARBITRAGE_BENEFIT"
+            ] = (
+                market_options[
+                    "ALTERNATIVE_NET_VALUE"
+                ]
+                -
+                market_options[
+                    "CURRENT_RISK_ADJUSTED_VALUE"
+                ]
+            )
+
+
+            # ------------------------------------------------
+            # BEST ALTERNATIVE
+            # ------------------------------------------------
+
+            best_option = market_options.loc[
+                market_options[
+                    "ARBITRAGE_BENEFIT"
+                ].idxmax()
+            ]
+
+
+            best_market = best_option[
+                "ALTERNATIVE_MARKET"
+            ]
+
+            best_benefit = float(
+                best_option[
+                    "ARBITRAGE_BENEFIT"
+                ]
+            )
+
+
+            # ------------------------------------------------
+            # DECISION
+            # ------------------------------------------------
+
+            if current_risk == "HIGH" and best_benefit > 0:
+
+                decision = "REROUTE RECOMMENDED"
+
+            elif current_risk == "MEDIUM" and best_benefit > 0:
+
+                decision = "MONITOR & CONSIDER REROUTE"
+
+            elif best_benefit > 0:
+
+                decision = "ALTERNATIVE MARKET AVAILABLE"
+
+            else:
+
+                decision = "CONTINUE CURRENT ROUTE"
+
+
+            # ------------------------------------------------
+            # ARBITRAGE KPI ROW
+            # ------------------------------------------------
+
+            st.markdown(
+                '<div class="section-title">'
+                'Arbitrage Opportunity'
+                '</div>',
+                unsafe_allow_html=True
+            )
+
+
+            a1, a2, a3, a4 = st.columns(4)
+
+
+            with a1:
+
+                st.metric(
+                    "Best Alternative",
+                    best_market
+                )
+
+
+            with a2:
+
+                st.metric(
+                    "Alternative Price",
+                    f'₹{best_option["ALTERNATIVE_PRICE_PER_KG"]:.0f}/kg'
+                )
+
+
+            with a3:
+
+                st.metric(
+                    "Potential Benefit",
+                    f'₹{best_benefit:,.0f}'
+                )
+
+
+            with a4:
+
+                st.metric(
+                    "Decision",
+                    decision
+                )
+
+
+            # ------------------------------------------------
+            # MARKET COMPARISON
+            # ------------------------------------------------
+
+            st.markdown(
+                '<div class="section-title">'
+                'Market Comparison'
+                '</div>',
+                unsafe_allow_html=True
+            )
+
+
+            comparison_display = market_options[
+                [
+                    "ALTERNATIVE_MARKET",
+                    "CURRENT_PRICE_PER_KG",
+                    "ALTERNATIVE_PRICE_PER_KG",
+                    "CURRENT_LOGISTICS_COST",
+                    "ALTERNATIVE_LOGISTICS_COST",
+                    "ARBITRAGE_BENEFIT"
+                ]
+            ].copy()
+
+
+            comparison_display.columns = [
+                "Alternative Market",
+                "Current Price ₹/kg",
+                "Alternative Price ₹/kg",
+                "Current Logistics ₹/kg",
+                "Alternative Logistics ₹/kg",
+                "Potential Benefit ₹"
+            ]
+
+
+            comparison_display[
+                "Potential Benefit ₹"
+            ] = comparison_display[
+                "Potential Benefit ₹"
+            ].round(0)
+
+
+            st.dataframe(
+                comparison_display,
+                use_container_width=True,
+                hide_index=True
+            )
+
+
+            # ------------------------------------------------
+            # PRICE COMPARISON CHART
+            # ------------------------------------------------
+
+            chart_data = market_options[
+                [
+                    "ALTERNATIVE_MARKET",
+                    "CURRENT_PRICE_PER_KG",
+                    "ALTERNATIVE_PRICE_PER_KG"
+                ]
+            ].copy()
+
+
+            chart_data = chart_data.rename(
+                columns={
+                    "ALTERNATIVE_MARKET": "Market",
+                    "CURRENT_PRICE_PER_KG": "Current Market",
+                    "ALTERNATIVE_PRICE_PER_KG": "Alternative Market"
+                }
+            )
+
+
+            chart_data = chart_data.melt(
+                id_vars="Market",
+                var_name="Price Type",
+                value_name="Price"
+            )
+
+
+            fig = px.bar(
+                chart_data,
+                x="Market",
+                y="Price",
+                color="Price Type",
+                barmode="group",
+                title="Current vs Alternative Market Price"
+            )
+
+
+            fig.update_layout(
+                template="plotly_dark",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#dbe2e8"),
+                yaxis_title="Price ₹/kg",
+                xaxis_title="Market"
+            )
+
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+
+            # ------------------------------------------------
+            # DECISION SUPPORT
+            # ------------------------------------------------
+
+            st.markdown(
+                '<div class="section-title">'
+                'Operational Recommendation'
+                '</div>',
+                unsafe_allow_html=True
+            )
+
+
+            if current_risk == "HIGH" and best_benefit > 0:
+
+                st.warning(
+                    f'⚠ High-risk shipment detected. '
+                    f'{container_id} has a spoilage score of '
+                    f'{int(current_score)}. '
+                    f'The scenario model identifies '
+                    f'{best_market} as the strongest alternative '
+                    f'market with an estimated benefit of '
+                    f'₹{best_benefit:,.0f}. '
+                    f'Rerouting should be evaluated.'
+                )
+
+
+            elif best_benefit > 0:
+
+                st.info(
+                    f'◐ An alternative market may provide an '
+                    f'estimated benefit of ₹{best_benefit:,.0f}. '
+                    f'Consider market conditions and logistics '
+                    f'before rerouting.'
+                )
+
+
+            else:
+
+                st.success(
+                    '✓ The current route remains economically '
+                    'preferable under the selected scenario.'
+                )
+
+
+            # ------------------------------------------------
+            # MODEL EXPLANATION
+            # ------------------------------------------------
+
+            st.markdown(
+                '<div class="section-title">'
+                'How the Arbitrage Model Works'
+                '</div>',
+                unsafe_allow_html=True
+            )
+
+
+            st.write(
+                "The model compares the risk-adjusted value of "
+                "selling at the current destination with the "
+                "net value of an alternative market."
+            )
+
+
+            st.code(
+                "Current Risk-Adjusted Value = "
+                "Current Market Value × "
+                "(1 − Spoilage Score / 100)\n\n"
+                "Alternative Net Value = "
+                "Alternative Market Value − "
+                "Alternative Logistics Cost\n\n"
+                "Arbitrage Benefit = "
+                "Alternative Net Value − "
+                "Current Risk-Adjusted Value"
+            )
