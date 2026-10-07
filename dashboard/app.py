@@ -1320,18 +1320,17 @@ elif page == "Container Intelligence":
 
         with spoilage_col:
 
-            fig = px.bar(
+            fig = px.line(
                 container_telemetry,
                 x="TIMESTAMP",
                 y="SPOILAGE_SCORE",
+                markers=True,
                 title="Spoilage Risk Trend"
             )
-
 
             fig.update_yaxes(
                 range=[0, 85]
             )
-
 
             fig.update_layout(
                 template="plotly_dark",
@@ -1340,7 +1339,6 @@ elif page == "Container Intelligence":
                 font=dict(color="#dbe2e8"),
                 height=340
             )
-
 
             st.plotly_chart(
                 fig,
