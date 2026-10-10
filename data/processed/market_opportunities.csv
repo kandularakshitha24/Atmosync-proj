@@ -1,0 +1,13 @@
+COMMODITY,CURRENT_MARKET,ALTERNATIVE_MARKET,CURRENT_PRICE_PER_KG,ALTERNATIVE_PRICE_PER_KG,QUANTITY_KG,CURRENT_LOGISTICS_COST,ALTERNATIVE_LOGISTICS_COST
+Tomato,Mumbai,Pune,42,48,1000,8,5
+Tomato,Mumbai,Hyderabad,42,45,1000,8,3
+Tomato,Mumbai,Bengaluru,42,46,1000,8,6
+Potato,Pune,Hyderabad,32,38,1000,6,3
+Potato,Pune,Bengaluru,32,35,1000,6,5
+Potato,Pune,Chennai,32,34,1000,6,7
+Mango,Chennai,Bengaluru,70,78,1000,7,5
+Mango,Chennai,Hyderabad,70,74,1000,7,4
+Apple,Hyderabad,Bengaluru,120,125,1000,9,7
+Apple,Hyderabad,Pune,120,130,1000,9,8
+Banana,Mumbai,Hyderabad,35,39,1000,6,3
+Banana,Mumbai,Pune,35,37,1000,6,5
