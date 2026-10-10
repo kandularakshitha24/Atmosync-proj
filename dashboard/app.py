@@ -167,20 +167,41 @@ st.markdown(
 # DATA FILES
 # ============================================================
 
+
+# ============================================================
+# DATA FILES
+# ============================================================
+
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
 SUMMARY_FILE = (
-    "data/processed/dashboard_container_summary.csv"
+    PROJECT_ROOT / "data" / "processed"
+    / "dashboard_container_summary.csv"
 )
+
+# Use the raw telemetry dataset uploaded to GitHub.
 
 TELEMETRY_FILE = (
-    "data/processed/kafka_processed_telemetry.csv"
+    PROJECT_ROOT / "data" / "processed"
+    / "kafka_processed_telemetry.csv"
 )
 
+
 MODEL_FILE = (
-    "ml/models/spoilage_risk_model.pkl"
+    PROJECT_ROOT / "ml" / "models"
+    / "spoilage_risk_model.pkl"
 )
 
 ENCODER_FILE = (
-    "ml/models/risk_label_encoder.pkl"
+    PROJECT_ROOT / "ml" / "models"
+    / "risk_label_encoder.pkl"
+)
+
+MARKET_FILE = (
+    PROJECT_ROOT / "data" / "processed"
+    / "market_opportunities.csv"
 )
 
 
@@ -188,18 +209,33 @@ ENCODER_FILE = (
 # LOAD DATA
 # ============================================================
 
-try:
 
-    telemetry = pd.read_csv(TELEMETRY_FILE)
-
-except FileNotFoundError:
-
-    st.error(
-        "Kafka telemetry file was not found."
-    )
-
+if not TELEMETRY_FILE.is_file():
+    st.error(f"Telemetry file not found: {TELEMETRY_FILE}")
     st.stop()
 
+try:
+    telemetry = pd.read_csv(TELEMETRY_FILE)
+
+    # Create risk_status if it is missing from the dataset
+    if "risk_status" not in telemetry.columns:
+        temperature = pd.to_numeric(
+            telemetry["temperature"], errors="coerce"
+        )
+        humidity = pd.to_numeric(
+            telemetry["humidity"], errors="coerce"
+        )
+
+        telemetry["risk_status"] = (
+            (temperature > 30) | (humidity > 75)
+        ).map({
+            True: "RISK",
+            False: "NORMAL"
+        })
+
+except Exception as e:
+    st.error(f"Could not load telemetry data: {e}")
+    st.stop()
 
 # ============================================================
 # BUILD CONTAINER SUMMARY FROM KAFKA TELEMETRY
@@ -306,22 +342,14 @@ data.columns = [
 # MARKET DATA
 # ============================================================
 
-MARKET_FILE = (
-    "data/processed/market_opportunities.csv"
-)
+if not MARKET_FILE.is_file():
+    st.error(f"Market opportunities file not found: {MARKET_FILE}")
+    st.stop()
 
 try:
-
-    market_data = pd.read_csv(
-        MARKET_FILE
-    )
-
-except FileNotFoundError:
-
-    st.error(
-        "Market opportunities file was not found."
-    )
-
+    market_data = pd.read_csv(MARKET_FILE)
+except Exception as e:
+    st.error(f"Could not load market data: {e}")
     st.stop()
 
 # ============================================================
